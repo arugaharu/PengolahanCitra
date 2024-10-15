@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pengolahan Citra</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+        }
+        #imageContainer {
+            max-width: 100%;
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #canvas {
+            max-width: 100%;
+            max-height: 400px;
+        }
+        .button-container {
+            margin-top: 20px;
+        }
+        button {
+            margin: 5px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Tugas Citra Gaharu,Fachrul,Nayaka</h1>
+    <input type="file" id="imageUpload" accept="image/*">
+    <div id="imageContainer">
+        <canvas id="canvas"></canvas>
+    </div>
+    <div class="button-container">
+        <button onclick="rotateImage()">Rotate</button>
+        <button onclick="mirrorImage()">Mirror</button>
+        <button onclick="convertToGrayscale()">Black & White</button>
+        <button onclick="invertColors()">Inverse</button>
+        <button onclick="resetImage()">Reset</button>
+    </div>
+
+    <script>
+        //deklarasi untuk membuat gambar tidak kebesaran
+        let originalImage = null;
+        let canvas = document.getElementById('canvas');
+        let ctx = canvas.getContext('2d');
+        const MAX_WIDTH = 800;
+        const MAX_HEIGHT = 400;
+
+        //deklarasi untuk upload image
+        document.getElementById('imageUpload').addEventListener('change', function(e) {
+            let file = e.target.files[0];
+            let reader = new FileReader();
+            reader.onload = function(event) {
+                originalImage = new Image();
+                originalImage.onload = function() {
+                    let scale = Math.min(MAX_WIDTH / originalImage.width, MAX_HEIGHT / originalImage.height);
+                    let width = originalImage.width * scale;
+                    let height = originalImage.height * scale;
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    ctx.drawImage(originalImage, 0, 0, width, height);
+                }
+                originalImage.src = event.target.result;
+            }
+            reader.readAsDataURL(file);
+        });
+
+        //deklarasi untuk rotate gambar
+        function rotateImage() {
+            let tempCanvas = document.createElement('canvas');
+            let tempCtx = tempCanvas.getContext('2d');
+            tempCanvas.width = canvas.height;
+            tempCanvas.height = canvas.width;
+            tempCtx.translate(tempCanvas.width / 2, tempCanvas.height / 2);
+            tempCtx.rotate(Math.PI / 2);
+            tempCtx.drawImage(canvas, -canvas.width / 2, -canvas.height / 2);
+            canvas.width = tempCanvas.width;
+            canvas.height = tempCanvas.height;
+            ctx.drawImage(tempCanvas, 0, 0);
+        }
+
+        //deklarasi untuk mirror gambar
+        function mirrorImage() {
+            ctx.save();
+            ctx.scale(-1, 1);
+            ctx.drawImage(canvas, -canvas.width, 0);
+            ctx.restore();
+        }
+
+        //deklarasi untuk membuat gambar abu2
+        function convertToGrayscale() {
+            let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            let data = imageData.data;
+            for (let i = 0; i < data.length; i += 4) {
+                let avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
+                data[i] = data[i + 1] = data[i + 2] = avg;
+            }
+            ctx.putImageData(imageData, 0, 0);
+        }
+
+        //deklaarsi menjadikan gambar negatif
+        function invertColors() {
+            let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            let data = imageData.data;
+            for (let i = 0; i < data.length; i += 4) {
+                data[i] = 255 - data[i];         // Red
+                data[i + 1] = 255 - data[i + 1]; // Green
+                data[i + 2] = 255 - data[i + 2]; // Blue
+            }
+            ctx.putImageData(imageData, 0, 0);
+        }
+
+        //deklarasi mengembalikan gambar seperti semula
+        function resetImage() {
+            if (originalImage) {
+                let scale = Math.min(MAX_WIDTH / originalImage.width, MAX_HEIGHT / originalImage.height);
+                let width = originalImage.width * scale;
+                let height = originalImage.height * scale;
+
+                canvas.width = width;
+                canvas.height = height;
+                ctx.drawImage(originalImage, 0, 0, width, height);
+            }
+        }
+    </script>
+</body>
+</html>
